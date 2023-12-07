@@ -1,7 +1,10 @@
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import React from "react";
+import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 export default function CastList({ data }) {
+  const navigation = useNavigation();
+
   let personName = "M. Aji Perdana";
   let characterName = "Optimus Prime";
 
@@ -15,7 +18,11 @@ export default function CastList({ data }) {
       >
         {!!data &&
           data.map((person, index) => (
-            <TouchableOpacity key={index} className="mr-4 items-center">
+            <TouchableOpacity
+              key={index}
+              className="mr-4 items-center"
+              onPress={() => navigation.navigate("Person", person)}
+            >
               <View className="overflow-hidden rounded-full h-20 w-20 items-center border border-neutral-400">
                 <Image
                   source={require("../../assets/profile.jpg")}
