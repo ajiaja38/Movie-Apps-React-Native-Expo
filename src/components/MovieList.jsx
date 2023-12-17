@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 
 const { width, height } = Dimensions.get("window");
 
-export default function MovieList({ title, data }) {
+export default function MovieList({ title, data, hideSeeAll }) {
   const navigation = useNavigation();
   let movieName = "Avengers: Infinity War";
 
@@ -22,9 +22,11 @@ export default function MovieList({ title, data }) {
       <View className="mx-4 flex-row justify-between items-center">
         <Text className="text-white text-xl">{title}</Text>
         <TouchableOpacity>
-          <Text style={styles.text} className="text-lg">
-            See All
-          </Text>
+          {!hideSeeAll && (
+            <Text style={styles.text} className="text-lg">
+              See All
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
       <ScrollView
