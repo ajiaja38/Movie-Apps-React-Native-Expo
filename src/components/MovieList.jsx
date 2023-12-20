@@ -10,6 +10,7 @@ import {
 import React from "react";
 import { styles } from "../theme";
 import { useNavigation } from "@react-navigation/native";
+import { image185 } from "../api/data/imagePath";
 
 const { width, height } = Dimensions.get("window");
 
@@ -41,14 +42,20 @@ export default function MovieList({ title, data, hideSeeAll }) {
           >
             <View className="space-y-1 mr-4">
               <Image
-                source={require("../../assets/avengers.jpg")}
-                className="rounded-xl"
+                source={{ uri: image185(item.poster_path) }}
+                className="rounded-2xl"
                 style={{ width: width * 0.33, height: height * 0.22 }}
               />
-              <Text className="text-neutral-300 ml-1 text-center">
-                {movieName.length > 14
-                  ? `${movieName.slice(0, 14)}...`
-                  : movieName}
+              <Text
+                style={{
+                  textAlign: "center",
+                  marginLeft: 1,
+                  color: "rgb(229, 229, 229)",
+                }}
+              >
+                {item.title.length > 14
+                  ? `${item.title.slice(0, 14)}...`
+                  : item.title}
               </Text>
             </View>
           </TouchableWithoutFeedback>
