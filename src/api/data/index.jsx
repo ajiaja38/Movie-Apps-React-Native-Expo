@@ -1,36 +1,37 @@
-import { api } from "../config";
 import { API_ENDPOINT } from "../config/apiEndpoint";
+import MakeRequest from "./Request";
 
-const { TRENDING, UPCOMING, TOP_RATED } = API_ENDPOINT;
+const {
+  TRENDING,
+  UPCOMING,
+  TOP_RATED,
+  DETAIL_MOVIE,
+  CREDITS_MOVIE,
+  SIMILAR_MOVIES,
+} = API_ENDPOINT;
 
 export default class MovieAPI {
   static async getTrendingMovies() {
-    try {
-      const { data } = await api.get(TRENDING);
-      return data;
-    } catch (error) {
-      console.log("Error: ", error.response.data.message);
-      return {};
-    }
+    return await MakeRequest.get(TRENDING);
   }
 
   static async getUpcomingMovies() {
-    try {
-      const { data } = await api.get(UPCOMING);
-      return data;
-    } catch (error) {
-      console.log("Error: ", error.response.data.message);
-      return {};
-    }
+    return await MakeRequest.get(UPCOMING);
   }
 
   static async getTopRatedMovies() {
-    try {
-      const { data } = await api.get(TOP_RATED);
-      return data;
-    } catch (error) {
-      console.log("Error: ", error.response.data.message);
-      return {};
-    }
+    return await MakeRequest.get(TOP_RATED);
+  }
+
+  static async getDetailMovie(id) {
+    return await MakeRequest.get(DETAIL_MOVIE(id));
+  }
+
+  static async getCreditsMovie(id) {
+    return await MakeRequest.get(CREDITS_MOVIE(id));
+  }
+
+  static async getSimilarMovies(id) {
+    return await MakeRequest.get(SIMILAR_MOVIES(id));
   }
 }

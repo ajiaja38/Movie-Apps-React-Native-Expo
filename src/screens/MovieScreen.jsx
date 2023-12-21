@@ -6,34 +6,51 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  StyleSheet,
 } from "react-native";
-import { useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { styles } from "../theme";
 import { ChevronLeftIcon } from "react-native-heroicons/outline";
 import { HeartIcon } from "react-native-heroicons/solid";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import CastList from "../components/CastList";
 import MovieList from "../components/MovieList";
 import Loading from "../components/Loading";
-import { image500, imageOri } from "../api/data/imagePath";
+import { fallbackMoviePoster, imageOri } from "../api/data/imagePath";
+import MovieAPI from "../api/data";
 
 const { width, height } = Dimensions.get("window");
 
 export default function MovieScreen() {
-  let movieName = "Transformers: Rise of the Beasts";
   const [isFavorite, setIsFavorite] = useState(false);
-  const [cast, setCast] = useState([1, 2, 3, 4]);
-  const [similarMovies, setSimilarMovies] = useState([1, 2, 3, 4]);
+  const [cast, setCast] = useState([]);
+  const [movie, setMovie] = useState({});
+  const [similarMovies, setSimilarMovies] = useState([]);
   const [isLoading, setIsloading] = useState(true);
 
   const navigation = useNavigation();
   const { params: item } = useRoute();
 
+  const getDetailMovie = async () => {
+    const data = await MovieAPI.getDetailMovie(item.id);
+    setMovie(data);
+  };
+
+  const getCreditsMovie = async () => {
+    const data = await MovieAPI.getCreditsMovie(item.id);
+    if (data && data.cast) setCast(data.cast);
+  };
+
+  const getSimilarMovie = async () => {
+    const data = await MovieAPI.getSimilarMovies(item.id);
+    setSimilarMovies(data.results);
+  };
+
   useEffect(() => {
     setTimeout(() => {
-      console.log(item.id);
+      getDetailMovie();
+      getCreditsMovie();
+      getSimilarMovie();
       setIsloading(false);
     }, 2000);
   }, [item]);
@@ -41,21 +58,20 @@ export default function MovieScreen() {
   return (
     <>
       {isLoading ? (
-        <View className="flex-1 bg-neutral-900">
+        <View style={styling.commonContainer}>
           <Loading />
         </View>
       ) : (
         <>
           <ScrollView
             contentContainerStyle={{ paddingBottom: 20 }}
-            className="flex-1 bg-neutral-900"
+            style={styling.commonContainer}
           >
             <View className="w-full">
-              <SafeAreaView className="absolute z-20 w-full flex-row justify-between items-center px-4 mt-4">
+              <SafeAreaView style={styling.safeAreaView}>
                 <TouchableOpacity
                   onPress={() => navigation.goBack()}
-                  style={styles.background}
-                  className="rounded-md p-1"
+                  style={[styling.background, { borderRadius: 6, padding: 4 }]}
                 >
                   <ChevronLeftIcon size={28} strokeWidth={2} color="white" />
                 </TouchableOpacity>
@@ -69,7 +85,9 @@ export default function MovieScreen() {
               </SafeAreaView>
               <View>
                 <Image
-                  source={{ uri: imageOri(item.backdrop_path) }}
+                  source={{
+                    uri: imageOri(movie.backdrop_path) || fallbackMoviePoster,
+                  }}
                   style={{ width, height: height * 0.55 }}
                 />
                 <LinearGradient
@@ -78,49 +96,101 @@ export default function MovieScreen() {
                     "rgba(23, 23, 23, 0.8)",
                     "rgba(23, 23, 23, 1)",
                   ]}
-                  style={{ width, height: height * 0.4 }}
+                  style={{
+                    width,
+                    height: height * 0.4,
+                    position: "absolute",
+                    bottom: 0,
+                  }}
                   start={{ x: 0.5, y: 0 }}
                   end={{ x: 0.5, y: 1 }}
-                  className="absolute bottom-0"
                 />
               </View>
             </View>
-            <View style={{ marginTop: -height * 0.09 }} className="space-y-3">
-              <Text className="text-gray-100 text-center  text-3xl font-bold tracking-wider">
-                {movieName}
-              </Text>
-              <Text className="text-neutral-400 font-semibold text-base text-center">
-                Released • 2020 • 170 min
-              </Text>
-              <View className="flex-row justify-center mx-4 space-x-2">
-                <Text className="text-neutral-400  font-semibold text-base text-center">
-                  Action •
+            <View style={{ marginTop: -height * 0.09, gap: 12 }}>
+              <Text style={styling.titleText}>{movie.title}</Text>
+              {movie.id ? (
+                <Text style={[styling.detailingText, styling.textDetail]}>
+                  {movie?.status} •{" "}
+                  {movie?.release_date?.split("-")[0] || "N/A"} •{" "}
+                  {movie?.runtime} min
                 </Text>
-                <Text className="text-neutral-400  font-semibold text-base text-center">
-                  Thrill •
-                </Text>
-                <Text className="text-neutral-400  font-semibold text-base text-center">
-                  Sci-Fi
-                </Text>
+              ) : null}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  marginHorizontal: 16,
+                  gap: 8,
+                }}
+              >
+                {movie?.genres?.map((genre, index) => (
+                  <Text
+                    key={genre.id}
+                    style={[styling.detailingText, styling.textDetail]}
+                  >
+                    {genre.name}{" "}
+                    {index + 1 !== movie.genres.length ? "•" : null}
+                  </Text>
+                ))}
               </View>
 
-              <Text className="text-neutral-400 text-justify text-base mx-4 tracking-wide">
-                Optimus Prime and the Autobots team up with a down on his luck
-                young man, an aspiring historian and with a powerful faction of
-                Transformers known as the Maximals to combat a sinister force
-                from outer space that threatens the Earth and all of mankind.
+              <Text style={[styling.synopsisText, styling.textDetail]}>
+                {movie.overview}
               </Text>
             </View>
 
-            <CastList data={cast} />
-            {/* <MovieList
+            {movie?.id && cast.length ? <CastList cast={cast} /> : null}
+            <MovieList
               title="Similar Movies"
               data={similarMovies}
               hideSeeAll={true}
-            /> */}
+            />
           </ScrollView>
         </>
       )}
     </>
   );
 }
+
+const styling = StyleSheet.create({
+  commonContainer: {
+    flex: 1,
+    backgroundColor: "rgb(23, 23, 23)",
+  },
+  safeAreaView: {
+    position: "absolute",
+    zIndex: 20,
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 16,
+  },
+  titleText: {
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: "bold",
+    letterSpacing: 0.8,
+    textAlign: "center",
+    color: "rgb(243 244 246)",
+    paddingHorizontal: 8,
+  },
+  textDetail: {
+    color: "rgb(163 163 163)",
+  },
+  detailingText: {
+    fontWeight: 600,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "center",
+  },
+  synopsisText: {
+    textAlign: "justify",
+    fontSize: 16,
+    lineHeight: 24,
+    marginHorizontal: 16,
+    letterSpacing: 0.4,
+  },
+});

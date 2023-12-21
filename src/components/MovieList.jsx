@@ -10,13 +10,12 @@ import {
 import React from "react";
 import { styles } from "../theme";
 import { useNavigation } from "@react-navigation/native";
-import { image185 } from "../api/data/imagePath";
+import { fallbackMoviePoster, image185 } from "../api/data/imagePath";
 
 const { width, height } = Dimensions.get("window");
 
 export default function MovieList({ title, data, hideSeeAll }) {
   const navigation = useNavigation();
-  let movieName = "Avengers: Infinity War";
 
   return (
     <View className="mb-8 space-y-4">
@@ -38,11 +37,13 @@ export default function MovieList({ title, data, hideSeeAll }) {
         {data.map((item, index) => (
           <TouchableWithoutFeedback
             key={index}
-            onPress={() => navigation.navigate("Movie", item)}
+            onPress={() => navigation.push("Movie", item)}
           >
             <View className="space-y-1 mr-4">
               <Image
-                source={{ uri: image185(item.poster_path) }}
+                source={{
+                  uri: image185(item.poster_path) || fallbackMoviePoster,
+                }}
                 className="rounded-2xl"
                 style={{ width: width * 0.33, height: height * 0.22 }}
               />

@@ -2,30 +2,52 @@ import {
   Dimensions,
   Image,
   ScrollView,
-  StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../theme";
 import { ChevronLeftIcon } from "react-native-heroicons/outline";
 import { HeartIcon } from "react-native-heroicons/solid";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import MovieList from "../components/MovieList";
 import Loading from "../components/Loading";
+import PersonAPI from "../api/data/person";
+import { fallbackPersonImage, image500 } from "../api/data/imagePath";
 
 const { width, height } = Dimensions.get("window");
 
 export default function PersonScreen() {
-  const [personMovies, setPersonMovies] = useState([1, 2, 3, 4]);
+  const [person, SetPerson] = useState({});
+  const [personMovies, setPersonMovies] = useState([]);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigation = useNavigation();
 
+  const { params: item } = useRoute();
+
+  const getDetailPerson = async () => {
+    const data = await PersonAPI.getDetailPerson(item.id);
+    SetPerson(data);
+  };
+
+  const getCreditsPerson = async () => {
+    const data = await PersonAPI.getCreditsPerson(item.id);
+    setPersonMovies(data.cast);
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      getDetailPerson();
+      getCreditsPerson();
+      setIsLoading(false);
+    }, 2000);
+  }, [item]);
+
   return (
-    <View className="flex-1 bg-neutral-900">
+    <View style={{ flex: 1, backgroundColor: "rgb(23 23 23)" }}>
       <SafeAreaView className="w-full flex-row justify-between items-center px-4 mt-4 mb-3">
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -53,51 +75,119 @@ export default function PersonScreen() {
             <View className="flex-row justify-center">
               <View className="items-center overflow-hidden rounded-full h-72 w-72 border-2 border-neutral-500">
                 <Image
-                  source={require("../../assets/profile.jpg")}
+                  source={{
+                    uri: image500(person.profile_path) || fallbackPersonImage,
+                  }}
                   style={{ height: height * 0.43, width: width * 0.74 }}
                 />
               </View>
             </View>
             <View style={{ marginTop: 16 }}>
-              <Text className="text-3xl text-white text-center font-bold">
-                M. Aji Perdana
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 30,
+                  lineHeight: 36,
+                  textAlign: "center",
+                  fontWeight: "bold",
+                }}
+              >
+                {person.name}
               </Text>
-              <Text className="text-base text-neutral-500 text-center">
-                Tanggamus, Indonesia
+              <Text
+                style={{
+                  color: "rgb(115, 115, 115)",
+                  fontSize: 16,
+                  lineHeight: 24,
+                  textAlign: "center",
+                }}
+              >
+                {person.place_of_birth}
               </Text>
             </View>
             <View className="mx-3 mt-6 p-4 bg-neutral-700 flex-row justify-between items-center rounded-full">
               <View className="items-center px-3 border-r-2 border-white">
-                <Text className="text-white font-semibold">Gender</Text>
-                <Text className="text-neutral-300 text-xs">Male</Text>
+                <Text style={{ color: "white", fontWeight: 600 }}>Gender</Text>
+                <Text
+                  style={{
+                    color: "rgb(212 212 212)",
+                    fontSize: 12,
+                    lineHeight: 16,
+                  }}
+                >
+                  {person.gender
+                    ? person.gender !== 1
+                      ? "Male"
+                      : "Female"
+                    : "-"}
+                </Text>
               </View>
               <View className="items-center px-3 border-r-2 border-white">
-                <Text className="text-white font-semibold">Birthday</Text>
-                <Text className="text-neutral-300 text-xs">2001-09-24</Text>
+                <Text style={{ color: "white", fontWeight: 600 }}>
+                  Birthday
+                </Text>
+                <Text
+                  style={{
+                    color: "rgb(212 212 212)",
+                    fontSize: 12,
+                    lineHeight: 16,
+                  }}
+                >
+                  {person.birthday ? person.birthday : "-"}
+                </Text>
               </View>
               <View className="items-center px-3 border-r-2 border-white">
-                <Text className="text-white font-semibold">Known For</Text>
-                <Text className="text-neutral-300 text-xs">Acting</Text>
+                <Text style={{ color: "white", fontWeight: 600 }}>
+                  Known For
+                </Text>
+                <Text
+                  style={{
+                    color: "rgb(212 212 212)",
+                    fontSize: 12,
+                    lineHeight: 16,
+                  }}
+                >
+                  {person.known_for_department
+                    ? person.known_for_department
+                    : "-"}
+                </Text>
               </View>
               <View className="items-center px-3">
-                <Text className="text-white font-semibold">Popularity</Text>
-                <Text className="text-neutral-300 text-xs">94.3</Text>
+                <Text style={{ color: "white", fontWeight: 600 }}>
+                  Popularity
+                </Text>
+                <Text
+                  style={{
+                    color: "rgb(212 212 212)",
+                    fontSize: 12,
+                    lineHeight: 16,
+                  }}
+                >
+                  {person.popularity ? person.popularity.toFixed(1) : "-"}
+                </Text>
               </View>
             </View>
             <View className="my-6 mx-4 space-y-2">
-              <Text className="text-white text-lg font-semibold">
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 18,
+                  lineHeight: 28,
+                  fontWeight: 600,
+                }}
+              >
                 Biography
               </Text>
-              <Text className="text-neutral-400 tracking-wide text-base text-justify">
-                Keanu Charles Reeves is a Canadian actor. Born in Beirut and
-                raised in Toronto, he made his acting debut in the Canadian
-                television series Hangin' In, before making his feature film
-                debut in Youngblood. Reeves had his breakthrough role in the
-                science fiction comedy Bill & Ted's Excellent Adventure (1989),
-                and he reprised his role in its sequels. He gained praise for
-                playing a hustler in the independent drama My Own Private Idaho
-                (1991) and established himself as an action hero with leading
-                roles in Point Break (1991) and Speed (1994).
+              <Text
+                style={{
+                  color: "rgb(163 163 163)",
+                  fontSize: 16,
+                  lineHeight: 24,
+                  letterSpacing: 0.4,
+                  textAlign: "justify",
+                }}
+              >
+                {person.biography ? person.biography : "-"}
               </Text>
             </View>
           </View>
