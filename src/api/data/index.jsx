@@ -8,6 +8,7 @@ const {
   DETAIL_MOVIE,
   CREDITS_MOVIE,
   SIMILAR_MOVIES,
+  SEARCH_MOVIES,
 } = API_ENDPOINT;
 
 export default class MovieAPI {
@@ -33,5 +34,9 @@ export default class MovieAPI {
 
   static async getSimilarMovies(id) {
     return await MakeRequest.get(SIMILAR_MOVIES(id));
+  }
+
+  static async searchMovies(query) {
+    return await MakeRequest.get(SEARCH_MOVIES(query));
   }
 }

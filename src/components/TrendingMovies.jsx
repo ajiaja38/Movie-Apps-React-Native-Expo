@@ -15,7 +15,18 @@ const { width, height } = Dimensions.get("window");
 export default function TrendingMovies({ data }) {
   return (
     <View className="mb-8">
-      <Text className="text-white font-bold text-xl mx-4 mb-5">Trending</Text>
+      <Text
+        style={{
+          color: "white",
+          fontWeight: "bold",
+          fontSize: 20,
+          lineHeight: 28,
+          marginHorizontal: 16,
+          marginBottom: 20,
+        }}
+      >
+        Trending
+      </Text>
       <Carousel
         data={data}
         renderItem={({ item }) => <MovieCard item={item} />}

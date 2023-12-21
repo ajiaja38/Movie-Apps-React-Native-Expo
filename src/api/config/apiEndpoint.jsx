@@ -8,6 +8,7 @@ export const API_ENDPOINT = {
   DETAIL_MOVIE: (id) => `movie/${id}?api_key=${apiKey}`,
   CREDITS_MOVIE: (id) => `movie/${id}/credits?api_key=${apiKey}`,
   SIMILAR_MOVIES: (id) => `movie/${id}/similar?api_key=${apiKey}`,
+  SEARCH_MOVIES: (query) => `search/movie?api_key=${apiKey}&query=${query}`,
 
   // person
   DETAIL_PERSON: (id) => `person/${id}?api_key=${apiKey}`,

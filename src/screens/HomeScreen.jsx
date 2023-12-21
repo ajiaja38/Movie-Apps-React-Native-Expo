@@ -53,7 +53,14 @@ export default function HomeScreen() {
         <StatusBar style="light" />
         <View className="flex-row justify-between mx-4 mt-4">
           <Bars3CenterLeftIcon size={30} strokeWidth={2} color="white" />
-          <Text className="text-white text-3xl font-bold">
+          <Text
+            style={{
+              color: "white",
+              fontWeight: "bold",
+              fontSize: 30,
+              lineHeight: 36,
+            }}
+          >
             <Text style={styles.text}>M</Text>ovies
           </Text>
           <TouchableOpacity onPress={() => navigation.navigate("Search")}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   TextInput,
@@ -13,14 +13,33 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { XMarkIcon } from "react-native-heroicons/outline";
 import { useNavigation } from "@react-navigation/native";
 import Loading from "../components/Loading";
+import { debounce } from "lodash";
+import MovieAPI from "../api/data";
+import { fallbackMoviePoster, image500 } from "../api/data/imagePath";
 
 const { width, height } = Dimensions.get("window");
 
 export default function SearchScreen() {
   const navigation = useNavigation();
-  const [result, setResult] = useState([1, 2, 4, 5, 6, 5]);
-  const [isLoading, setIsLoading] = useState();
+  const [result, setResult] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const movieName = "Avengers: Infinity War";
+
+  const handleSearch = (value) => {
+    if (value.length > 2) {
+      setIsLoading(true);
+      setTimeout(async () => {
+        const response = await MovieAPI.searchMovies(value);
+        if (response && response.results) setResult(response.results);
+        setIsLoading(false);
+      }, 1500);
+    } else {
+      setIsLoading(false);
+      setResult([]);
+    }
+  };
+
+  const handleTextDebounce = useCallback(debounce(handleSearch, 500), []);
 
   return (
     <SafeAreaView className="bg-neutral-800 flex-1">
@@ -28,6 +47,7 @@ export default function SearchScreen() {
         <TextInput
           placeholder="Search Movies"
           placeholderTextColor={"lightgray"}
+          onChangeText={handleTextDebounce}
           className="pb-1 pl-6 flex-1 text-base font-semibold text-white tracking-wider"
         />
         <TouchableOpacity
@@ -45,7 +65,7 @@ export default function SearchScreen() {
           contentContainerStyle={{ paddingHorizontal: 15 }}
           className="space-y-3"
         >
-          <Text className="text-white font-semibold ml-1">
+          <Text style={{ color: "white", fontWeight: 600, marginLeft: 4 }}>
             Result ({result.length})
           </Text>
           <View className="flex-row justify-between flex-wrap">
@@ -57,13 +77,21 @@ export default function SearchScreen() {
                 <View className="space-y-2 mb-4">
                   <Image
                     className="rounded-3xl"
-                    source={require("../../assets/avengers.jpg")}
+                    source={{
+                      uri: image500(item.poster_path) || fallbackMoviePoster,
+                    }}
                     style={{ width: width * 0.44, height: height * 0.3 }}
                   />
-                  <Text className="text-neutral-300 text-center ml-1">
-                    {movieName.length > 22
-                      ? movieName.slice(0, 22) + "..."
-                      : movieName}
+                  <Text
+                    style={{
+                      color: "rgb(212 212 212)",
+                      textAlign: "center",
+                      marginLeft: 4,
+                    }}
+                  >
+                    {item.title.length > 22
+                      ? item.title.slice(0, 22) + "..."
+                      : item.title}
                   </Text>
                 </View>
               </TouchableWithoutFeedback>
@@ -76,8 +104,16 @@ export default function SearchScreen() {
             source={require("../../assets/not-found.png")}
             className="h-72 w-72"
           />
-          <Text className="text-white text-3xl font-extrabold mt-3">
-            No Result
+          <Text
+            style={{
+              color: "white",
+              fontWeight: "bold",
+              marginTop: 12,
+              fontSize: 24,
+              lineHeight: 32,
+            }}
+          >
+            Please enter a movie name...
           </Text>
         </View>
       )}
